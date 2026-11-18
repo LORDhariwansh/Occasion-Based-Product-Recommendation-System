@@ -1,0 +1,23 @@
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+def test_health_and_products():
+    with TestClient(app) as client:
+        health = client.get("/")
+        assert health.status_code == 200
+        assert health.json()["eligible_products"] == 104
+        products = client.get("/products")
+        assert products.status_code == 200
+        assert len(products.json()) == 104
+
+
+def test_recommend_validates_empty_input_and_respects_budget():
+    with TestClient(app) as client:
+        assert client.post("/recommend", json={"occasion": "   "}).status_code == 422
+        response = client.post("/recommend", json={"occasion": "Something under ₹1000", "top_k": 10})
+        assert response.status_code == 200
+        result = response.json()
+        assert result["recommendations"]
+        assert all(item["price"] <= 1000 for item in result["recommendations"])
