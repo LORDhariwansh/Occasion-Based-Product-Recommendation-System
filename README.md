@@ -118,7 +118,7 @@ Deploy the frontend and backend independently.
 
 ### Frontend on Vercel
 
-Create or reconfigure the Vercel project with the repository root as its root directory, not `backend/`. The included [vercel.json](vercel.json) builds only `frontend/` as a static Vite site; it does not package the Python backend. In the Vercel project settings, set the production environment variable before deploying:
+Configure the Vercel project with `frontend` as its Root Directory. The included [vercel.json](vercel.json) then builds the Vite site in that directory and does not package the Python backend. In the Vercel project settings, set the production environment variable before deploying:
 
 ```text
 VITE_API_URL=https://occasion-based-product-recommendation-ot50.onrender.com/
