@@ -131,7 +131,7 @@ VITE_API_URL=https://your-render-service.onrender.com
 [render.yaml](render.yaml) defines an independently deployable FastAPI web service. In Render, choose **New → Blueprint**, select this repository, and provide the production frontend origin when prompted for `CORS_ORIGINS`:
 
 ```text
-https://your-vercel-project.vercel.app
+(https://frontend-gamma-six-vnzudvj78k.vercel.app/)
 ```
 
 The Blueprint uses Python 3.11, installs the runtime-only dependencies, runs Uvicorn on `$PORT`, and configures `/` as its health check. It pins the official CPU-only PyTorch wheel because this service performs CPU inference and does not need CUDA. The selected `1c-2g` Render plan is the recommended baseline for a continuously loaded sentence-transformer model. Render's free FastAPI service is suitable only for a demo: it spins down after idle time and its lower memory allocation may not reliably accommodate PyTorch and the model.
