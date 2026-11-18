@@ -1,6 +1,14 @@
 from fastapi.testclient import TestClient
 
+from app.config import parse_cors_origins
 from app.main import app
+
+
+def test_cors_origins_are_normalized():
+    assert parse_cors_origins("(https://example.vercel.app/), https://example.test/") == [
+        "https://example.vercel.app",
+        "https://example.test",
+    ]
 
 
 def test_health_and_products():

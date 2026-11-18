@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(
+  /\/+$/,
+  "",
+);
 
 export async function getRecommendations(occasion, topK = 6) {
   const response = await fetch(`${API_BASE}/recommend`, {
