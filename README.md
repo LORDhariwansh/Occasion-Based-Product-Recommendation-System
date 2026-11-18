@@ -76,6 +76,8 @@ uvicorn app.main:app --app-dir backend --reload --port 8000
 
 The first startup downloads `all-MiniLM-L6-v2` and creates an embedding cache in `backend/.cache/`. API documentation is available at `http://localhost:8000/docs`.
 
+For test dependencies, install `backend\requirements-dev.txt` instead of the runtime-only file.
+
 ### Frontend
 
 In a second terminal:
@@ -94,6 +96,7 @@ Copy the example configuration files only when defaults need to change:
 
 ```powershell
 Copy-Item .env.example .env
+Copy-Item backend\.env.example backend\.env
 Copy-Item frontend\.env.example frontend\.env.local
 ```
 
@@ -104,9 +107,40 @@ Copy-Item frontend\.env.example frontend\.env.local
 | `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Sentence Transformer model |
 | `MIN_RELEVANCE_SCORE` | `0.20` | Minimum hybrid relevance score |
 | `CORS_ORIGINS` | local Vite URLs | Comma-separated permitted frontend origins |
+| `HF_HOME` | library default | Hugging Face model download/cache directory |
 | `VITE_API_URL` | `http://localhost:8000` | Frontend API base URL |
 
 `.env` files are ignored by Git. The included example files contain placeholders and no credentials.
+
+## Deployment
+
+Deploy the frontend and backend independently.
+
+### Frontend on Vercel
+
+Create or reconfigure the Vercel project with the repository root as its root directory, not `backend/`. The included [vercel.json](vercel.json) builds only `frontend/` as a static Vite site; it does not package the Python backend. In the Vercel project settings, set the production environment variable before deploying:
+
+```text
+VITE_API_URL=https://your-render-service.onrender.com
+```
+
+`VITE_API_URL` is embedded during the frontend build, so redeploy the Vercel project after changing it.
+
+### Backend on Render
+
+[render.yaml](render.yaml) defines an independently deployable FastAPI web service. In Render, choose **New → Blueprint**, select this repository, and provide the production frontend origin when prompted for `CORS_ORIGINS`:
+
+```text
+https://your-vercel-project.vercel.app
+```
+
+The Blueprint uses Python 3.11, installs the runtime-only dependencies, runs Uvicorn on `$PORT`, and configures `/` as its health check. It pins the official CPU-only PyTorch wheel because this service performs CPU inference and does not need CUDA. The selected `1c-2g` Render plan is the recommended baseline for a continuously loaded sentence-transformer model. Render's free FastAPI service is suitable only for a demo: it spins down after idle time and its lower memory allocation may not reliably accommodate PyTorch and the model.
+
+After Render publishes the API URL, set it as `VITE_API_URL` in Vercel, set Render's `CORS_ORIGINS` to the Vercel URL, then redeploy both services.
+
+### Why the backend is not deployed on Vercel
+
+Vercel Python Functions have a 500 MB uncompressed standard bundle limit. The semantic model requires `sentence-transformers`, which requires PyTorch. A normal Linux PyTorch resolution includes CUDA-related packages and produced the reported 5.53 GB function bundle. CPU-only PyTorch substantially reduces unnecessary GPU libraries, but the full semantic-runtime bundle and model are still not a reliable fit for the standard Vercel Function limit or serverless cold starts. Vercel's Large Functions beta can raise the package limit to 5 GB, but the reported bundle is already larger and the function filesystem remains ephemeral. Keep Vercel for the frontend and use a long-running Python service for the API.
 
 ## API usage
 
@@ -131,6 +165,7 @@ Run backend tests from the repository root:
 
 ```powershell
 $env:PYTHONPATH = "$PWD\backend"
+python -m pip install -r backend\requirements-dev.txt
 python -m pytest backend\tests -q
 ```
 
@@ -150,12 +185,15 @@ backend/
     schemas/            Request and response models
     services/           Loading, preprocessing, embedding, and ranking
   tests/                API and preprocessing tests
+  requirements-dev.txt  Test-only dependencies
   products.json         Supplied product catalog
 frontend/
   public/fallback-images/  Local, product-type fallback images
   src/components/       User-interface components
   src/services/         API client
 DATASET_ANALYSIS.md     Catalog inspection report
+render.yaml             Render FastAPI deployment blueprint
+vercel.json             Vercel static frontend build configuration
 ```
 
 ## Limitations and future improvements
@@ -164,7 +202,8 @@ DATASET_ANALYSIS.md     Catalog inspection report
 - The catalog has no labelled relevance dataset, so the project does not claim a retrieval-accuracy metric.
 - Recommendation quality depends on the completeness of supplied product text.
 - Remote catalog image availability depends on the source host; local fallbacks preserve card layout when an image cannot load.
-- Potential next steps include a labelled evaluation set, product/category metadata enrichment, and a production deployment configuration.
+- The backend downloads the model on a fresh instance. A persistent disk or prebuilt image can reduce startup time on a paid host.
+- Potential next steps include a labelled evaluation set and product/category metadata enrichment.
 
 ## Author
 

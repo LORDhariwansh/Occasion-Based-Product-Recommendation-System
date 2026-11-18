@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: occasion-recommender-api
+    runtime: python
+    region: oregon
+    plan: 1c-2g
+    rootDir: backend
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: PRODUCTS_PATH
+        value: products.json
+      - key: CACHE_DIR
+        value: /tmp/occasion-recommender-cache
+      - key: HF_HOME
+        value: /tmp/huggingface
+      - key: EMBEDDING_MODEL
+        value: all-MiniLM-L6-v2
+      - key: MIN_RELEVANCE_SCORE
+        value: "0.20"
+      - key: CORS_ORIGINS
+        sync: false
