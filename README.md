@@ -134,7 +134,7 @@ VITE_API_URL=https://your-render-service.onrender.com
 (https://frontend-gamma-six-vnzudvj78k.vercel.app/)
 ```
 
-The Blueprint uses Python 3.11, installs the runtime-only dependencies, runs Uvicorn on `$PORT`, and configures `/` as its health check. It pins the official CPU-only PyTorch wheel because this service performs CPU inference and does not need CUDA. The selected `1c-2g` Render plan is the recommended baseline for a continuously loaded sentence-transformer model. Render's free FastAPI service is suitable only for a demo: it spins down after idle time and its lower memory allocation may not reliably accommodate PyTorch and the model.
+The Blueprint uses Python 3.11, installs the runtime-only dependencies, runs Uvicorn on `$PORT`, and configures `/` as its health check. The repository-level `.python-version` also pins Python 3.11 for manually configured Render services. It pins the official CPU-only PyTorch wheel because this service performs CPU inference and does not need CUDA. The selected `1c-2g` Render plan is the recommended baseline for a continuously loaded sentence-transformer model. Render's free FastAPI service is suitable only for a demo: it spins down after idle time and its lower memory allocation may not reliably accommodate PyTorch and the model.
 
 After Render publishes the API URL, set it as `VITE_API_URL` in Vercel, set Render's `CORS_ORIGINS` to the Vercel URL, then redeploy both services.
 
