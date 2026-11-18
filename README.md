@@ -170,6 +170,4 @@ DATASET_ANALYSIS.md     Catalog inspection report
 
 Built by [LORDhariwansh](https://github.com/LORDhariwansh).
 
-## AI assistance disclosure
 
-AI coding assistance was used during development for implementation support, code review, and documentation. The system behavior, catalog-grounded recommendations, and final verification should be reviewed by the repository owner before production use.
